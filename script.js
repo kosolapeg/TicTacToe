@@ -1,112 +1,120 @@
-class TicTacToe {
-    constructor() {
-        this.board = Array(9).fill('');
-        this.currentPlayer = 'X';
-        this.gameActive = true;
-        this.winningCombinations = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6]             // Diagonals
-        ];
-        
-        this.initializeGame();
+// Game state variables
+let board = Array(9).fill('');
+let currentPlayer = 'X';
+let gameActive = true;
+let cells = [];
+let statusElement = null;
+let restartBtn = null;
+
+const winningCombinations = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+    [0, 4, 8], [2, 4, 6]             // Diagonals
+];
+
+// Arrow function to initialize the game
+const initializeGame = () => {
+    cells = document.querySelectorAll('[data-cell]');
+    statusElement = document.getElementById('status');
+    restartBtn = document.getElementById('restartBtn');
+    
+    cells.forEach((cell, index) => {
+        cell.addEventListener('click', () => handleCellClick(index));
+    });
+    
+    restartBtn.addEventListener('click', () => restartGame());
+    
+    updateStatus();
+};
+
+// Arrow function to handle cell clicks
+const handleCellClick = (index) => {
+    if (board[index] !== '' || !gameActive) {
+        return;
     }
     
-    initializeGame() {
-        this.cells = document.querySelectorAll('[data-cell]');
-        this.statusElement = document.getElementById('status');
-        this.restartBtn = document.getElementById('restartBtn');
-        
-        this.cells.forEach((cell, index) => {
-            cell.addEventListener('click', () => this.handleCellClick(index));
+    board[index] = currentPlayer;
+    cells[index].textContent = currentPlayer;
+    cells[index].classList.add(currentPlayer.toLowerCase());
+    
+    if (checkWin()) {
+        endGame(false);
+    } else if (checkDraw()) {
+        endGame(true);
+    } else {
+        switchPlayer();
+        updateStatus();
+    }
+};
+
+// Arrow function to check for win
+const checkWin = () => {
+    return winningCombinations.some(combination => {
+        const [a, b, c] = combination;
+        return board[a] !== '' &&
+               board[a] === board[b] &&
+               board[a] === board[c];
+    });
+};
+
+// Arrow function to check for draw
+const checkDraw = () => {
+    return board.every(cell => cell !== '');
+};
+
+// Arrow function to end the game
+const endGame = (draw) => {
+    gameActive = false;
+    
+    if (draw) {
+        statusElement.textContent = "Game ended in a draw!";
+    } else {
+        statusElement.textContent = `Player ${currentPlayer} wins!`;
+        highlightWinningCells();
+    }
+};
+
+// Arrow function to highlight winning cells
+const highlightWinningCells = () => {
+    const winningCombination = winningCombinations.find(combination => {
+        const [a, b, c] = combination;
+        return board[a] !== '' &&
+               board[a] === board[b] &&
+               board[a] === board[c];
+    });
+    
+    if (winningCombination) {
+        winningCombination.forEach(index => {
+            cells[index].classList.add('winning');
         });
-        
-        this.restartBtn.addEventListener('click', () => this.restartGame());
-        
-        this.updateStatus();
     }
+};
+
+// Arrow function to switch players
+const switchPlayer = () => {
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+};
+
+// Arrow function to update status
+const updateStatus = () => {
+    statusElement.textContent = `Player ${currentPlayer}'s turn`;
+};
+
+// Arrow function to restart the game
+const restartGame = () => {
+    board = Array(9).fill('');
+    currentPlayer = 'X';
+    gameActive = true;
     
-    handleCellClick(index) {
-        if (this.board[index] !== '' || !this.gameActive) {
-            return;
-        }
-        
-        this.board[index] = this.currentPlayer;
-        this.cells[index].textContent = this.currentPlayer;
-        this.cells[index].classList.add(this.currentPlayer.toLowerCase());
-        
-        if (this.checkWin()) {
-            this.endGame(false);
-        } else if (this.checkDraw()) {
-            this.endGame(true);
-        } else {
-            this.switchPlayer();
-            this.updateStatus();
-        }
-    }
+    cells.forEach(cell => {
+        cell.textContent = '';
+        cell.classList.remove('x', 'o', 'winning');
+    });
     
-    checkWin() {
-        return this.winningCombinations.some(combination => {
-            const [a, b, c] = combination;
-            return this.board[a] !== '' &&
-                   this.board[a] === this.board[b] &&
-                   this.board[a] === this.board[c];
-        });
-    }
-    
-    checkDraw() {
-        return this.board.every(cell => cell !== '');
-    }
-    
-    endGame(draw) {
-        this.gameActive = false;
-        
-        if (draw) {
-            this.statusElement.textContent = "Game ended in a draw!";
-        } else {
-            this.statusElement.textContent = `Player ${this.currentPlayer} wins!`;
-            this.highlightWinningCells();
-        }
-    }
-    
-    highlightWinningCells() {
-        const winningCombination = this.winningCombinations.find(combination => {
-            const [a, b, c] = combination;
-            return this.board[a] !== '' &&
-                   this.board[a] === this.board[b] &&
-                   this.board[a] === this.board[c];
-        });
-        
-        if (winningCombination) {
-            winningCombination.forEach(index => {
-                this.cells[index].classList.add('winning');
-            });
-        }
-    }
-    
-    switchPlayer() {
-        this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
-    }
-    
-    updateStatus() {
-        this.statusElement.textContent = `Player ${this.currentPlayer}'s turn`;
-    }
-    
-    restartGame() {
-        this.board = Array(9).fill('');
-        this.currentPlayer = 'X';
-        this.gameActive = true;
-        
-        this.cells.forEach(cell => {
-            cell.textContent = '';
-            cell.classList.remove('x', 'o', 'winning');
-        });
-        
-        this.updateStatus();
-    }
-}
+    updateStatus();
+};
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new TicTacToe();
+    initializeGame();
 });
